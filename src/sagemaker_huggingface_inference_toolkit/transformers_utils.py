@@ -15,6 +15,7 @@ import importlib.util
 import json
 import logging
 import os
+import re
 from pathlib import Path
 from typing import Optional
 
@@ -40,7 +41,7 @@ def is_aws_neuron_available():
 
 logger = logging.getLogger(__name__)
 
-PYTORCH_WEIGHTS_NAME = "pytorch_model.bin"
+PYTORCH_WEIGHTS_NAME = r"pytorch_model(-\d{5}-of-\d{5})?\.bin"
 TF2_WEIGHTS_NAME = "tf_model.h5"
 FRAMEWORK_MAPPING = {"pytorch": PYTORCH_WEIGHTS_NAME, "tensorflow": TF2_WEIGHTS_NAME}
 
@@ -72,6 +73,8 @@ FILE_LIST_NAMES = [
     "entity_vocab.json",
     "pooling_config.json",
 ]
+if "HF_TRUST_REMOTE_CODE" in os.environ and os.environ["HF_TRUST_REMOTE_CODE"] == "1":
+    FILE_LIST_NAMES.append(r".*pipeline\.py")
 
 REPO_ID_SEPARATOR = "__"
 
@@ -190,7 +193,7 @@ def _load_model_from_hub(
     download_file_list = [
         file.rfilename
         for file in model_info.siblings
-        if file.rfilename in FILE_LIST_NAMES + [FRAMEWORK_MAPPING[framework]]
+        if (any(re.fullmatch(pattern, file.rfilename) for pattern in FILE_LIST_NAMES + [FRAMEWORK_MAPPING[framework]]))
     ]
 
     # download files to storage_folder and removes cache

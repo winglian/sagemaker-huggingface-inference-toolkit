@@ -100,11 +100,14 @@ class HuggingFaceHandlerService(ABC):
             hf_pipeline (Pipeline): A Hugging Face Transformer pipeline.
         """
         # gets pipeline from task tag
+        hf_pipeline_kwargs = {}
+        if "HF_TRUST_REMOTE_CODE" in os.environ and os.environ["HF_TRUST_REMOTE_CODE"] == "1":
+            hf_pipeline_kwargs["trust_remote_code"] = True
         if "HF_TASK" in os.environ:
-            hf_pipeline = get_pipeline(task=os.environ["HF_TASK"], model_dir=model_dir, device=self.device)
+            hf_pipeline = get_pipeline(task=os.environ["HF_TASK"], model_dir=model_dir, device=self.device, **hf_pipeline_kwargs)
         elif "config.json" in os.listdir(model_dir):
             task = infer_task_from_model_architecture(f"{model_dir}/config.json")
-            hf_pipeline = get_pipeline(task=task, model_dir=model_dir, device=self.device)
+            hf_pipeline = get_pipeline(task=task, model_dir=model_dir, device=self.device, **hf_pipeline_kwargs)
         else:
             raise ValueError(
                 f"You need to define one of the following {list(SUPPORTED_TASKS.keys())} as env 'HF_TASK'.", 403
