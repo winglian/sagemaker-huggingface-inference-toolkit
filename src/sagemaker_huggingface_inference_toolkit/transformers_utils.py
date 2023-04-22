@@ -280,7 +280,7 @@ def get_pipeline(task: str, device: int, model_dir: Path, **kwargs) -> Pipeline:
     for c in [str(_) for _ in Path("/tmp/huggingface-cache/hub/").rglob("*")]:
         logging.warning(f"hub: {c}")
 
-    hf_pipeline = pipeline(task=task, model=model_dir, device=device, **kwargs)
+    hf_pipeline = pipeline(task=task, model=str(model_dir), device=device, **kwargs)
 
     # wrapp specific pipeline to support better ux
     if task == "conversational":
