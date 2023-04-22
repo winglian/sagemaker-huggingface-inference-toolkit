@@ -76,7 +76,8 @@ FILE_LIST_NAMES = [
 if "HF_TRUST_REMOTE_CODE" in os.environ and os.environ["HF_TRUST_REMOTE_CODE"] == "1":
     FILE_LIST_NAMES.append(r".*pipeline\.py")
 
-REPO_ID_SEPARATOR = "__"
+REPO_ID_PREFIX = os.getenv("REPO_ID_PREFIX", "")
+REPO_ID_SEPARATOR = os.getenv("REPO_ID_SEPARATOR", "__")
 
 ARCHITECTURES_2_TASK = {
     "TapasForQuestionAnswering": "table-question-answering",
@@ -155,13 +156,13 @@ def _build_storage_path(model_id: str, model_dir: Path, revision: Optional[str] 
     creates storage path for hub model based on model_id and revision
     """
     if "/" and revision is None:
-        storage_path = os.path.join(model_dir, model_id.replace("/", REPO_ID_SEPARATOR))
+        storage_path = os.path.join(model_dir, (REPO_ID_PREFIX + model_id).replace("/", REPO_ID_SEPARATOR))
     elif "/" and revision is not None:
-        storage_path = os.path.join(model_dir, model_id.replace("/", REPO_ID_SEPARATOR) + "." + revision)
+        storage_path = os.path.join(model_dir, (REPO_ID_PREFIX + model_id).replace("/", REPO_ID_SEPARATOR) + "." + revision)
     elif revision is not None:
-        storage_path = os.path.join(model_dir, model_id + "." + revision)
+        storage_path = os.path.join(model_dir, REPO_ID_PREFIX + model_id + "." + revision)
     else:
-        storage_path = os.path.join(model_dir, model_id)
+        storage_path = os.path.join(model_dir, REPO_ID_PREFIX + model_id)
     return storage_path
 
 
@@ -272,6 +273,13 @@ def get_pipeline(task: str, device: int, model_dir: Path, **kwargs) -> Pipeline:
         kwargs["tokenizer"] = model_dir
 
     # load pipeline
+    logging.warning(f"attempting to load model from {model_dir} with contents: ")
+    for c in [str(_) for _ in Path(model_dir).rglob("*")]:
+        logging.warning(f"contents: {c}")
+    logging.warning(f"btw, here are some additional contents in the hub cache: ")
+    for c in [str(_) for _ in Path("/tmp/huggingface-cache/hub/").rglob("*")]:
+        logging.warning(f"hub: {c}")
+
     hf_pipeline = pipeline(task=task, model=model_dir, device=device, **kwargs)
 
     # wrapp specific pipeline to support better ux

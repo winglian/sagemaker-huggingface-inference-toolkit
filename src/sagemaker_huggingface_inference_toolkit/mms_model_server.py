@@ -84,7 +84,8 @@ def start_model_server(handler_service=DEFAULT_HANDLER_SERVICE):
             revision=HF_MODEL_REVISION,
             use_auth_token=HF_API_TOKEN,
         )
-        _adapt_to_mms_format(handler_service, storage_dir)
+        if not os.getenv("MMS_SKIP_MODEL_ARCHIVER", False):
+            _adapt_to_mms_format(handler_service, storage_dir)
     else:
         _set_python_path()
 
