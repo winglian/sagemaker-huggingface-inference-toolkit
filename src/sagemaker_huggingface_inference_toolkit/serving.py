@@ -25,7 +25,7 @@ def _retry_if_error(exception):
     return isinstance(exception, CalledProcessError or OSError)
 
 
-@retry(stop_max_delay=1000 * 50, retry_on_exception=_retry_if_error)
+@retry(stop_max_delay=1000 * 300, retry_on_exception=_retry_if_error)
 def _start_mms():
     mms_model_server.start_model_server(handler_service=HANDLER_SERVICE)
 
