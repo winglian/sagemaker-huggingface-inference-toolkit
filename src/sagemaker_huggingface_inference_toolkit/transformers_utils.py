@@ -41,9 +41,9 @@ def is_aws_neuron_available():
 
 logger = logging.getLogger(__name__)
 
-PYTORCH_WEIGHTS_NAME = r"pytorch_model(-\d{5}-of-\d{5})?\.bin"
-TF2_WEIGHTS_NAME = "tf_model.h5"
-FRAMEWORK_MAPPING = {"pytorch": PYTORCH_WEIGHTS_NAME, "tensorflow": TF2_WEIGHTS_NAME}
+PYTORCH_WEIGHTS_NAMES = [r"pytorch_model(-\d{5}-of-\d{5})?\.bin", "pytorch_model.bin.index.json"]
+TF2_WEIGHTS_NAMES = ["tf_model.h5"]
+FRAMEWORK_MAPPING = {"pytorch": PYTORCH_WEIGHTS_NAMES, "tensorflow": TF2_WEIGHTS_NAMES}
 
 FILE_LIST_NAMES = [
     "config.json",
@@ -194,7 +194,7 @@ def _load_model_from_hub(
     download_file_list = [
         file.rfilename
         for file in model_info.siblings
-        if (any(re.fullmatch(pattern, file.rfilename) for pattern in FILE_LIST_NAMES + [FRAMEWORK_MAPPING[framework]]))
+        if (any(re.fullmatch(pattern, file.rfilename) for pattern in FILE_LIST_NAMES + FRAMEWORK_MAPPING[framework]))
     ]
 
     # download files to storage_folder and removes cache
