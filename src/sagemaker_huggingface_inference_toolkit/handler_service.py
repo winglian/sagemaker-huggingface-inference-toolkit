@@ -103,6 +103,8 @@ class HuggingFaceHandlerService(ABC):
         hf_pipeline_kwargs = {}
         if "HF_TRUST_REMOTE_CODE" in os.environ and os.environ["HF_TRUST_REMOTE_CODE"] == "1":
             hf_pipeline_kwargs["trust_remote_code"] = True
+        if "HF_TOKENIZER" in os.environ:
+            hf_pipeline_kwargs["tokenizer"] = os.getenv("HF_TOKENIZER")
         if "HF_TASK" in os.environ:
             hf_pipeline = get_pipeline(task=os.environ["HF_TASK"], model_dir=model_dir, device=self.device, **hf_pipeline_kwargs)
         elif "config.json" in os.listdir(model_dir):
